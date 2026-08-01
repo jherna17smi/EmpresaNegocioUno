@@ -30,17 +30,91 @@
     .badge-expense{ background: var(--brand-red);} 
     footer{ font-size:.9rem; }
     .sticky-footer{ position:sticky; top:100%; }
+
+    /* Authentication interface */
+    .auth-screen{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:1.5rem;
+      background:
+        radial-gradient(circle at top left, rgba(13,110,253,.28), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(220,53,69,.24), transparent 35%),
+        linear-gradient(135deg, #081b43, #123a8c);
+    }
+    .auth-card{
+      width:min(100%, 430px);
+      border:0;
+      border-top:6px solid var(--brand-red);
+      border-radius:1rem;
+    }
+    .auth-logo{
+      width:64px;
+      height:64px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 1rem;
+      border-radius:50%;
+      background:linear-gradient(135deg, var(--brand-blue), #123a8c);
+      color:#fff;
+      font-size:1.65rem;
+      font-weight:700;
+    }
+    .password-rules{
+      font-size:.82rem;
+      color:#6c757d;
+    }
+    .app-protected{ display:none; }
   </style>
 </head>
 <body>
-  <header class="hero">
+  <!--
+    IMPORTANT:
+    This login system is intended for a static GitHub Pages demonstration.
+    Credentials and financial data are stored in this browser's localStorage.
+    It does not provide secure server-side authentication.
+  -->
+  <section id="authScreen" class="auth-screen">
+    <div class="card auth-card shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        <div class="auth-logo">$</div>
+        <h1 class="h3 text-center fw-bold mb-2">Business Finances</h1>
+        <p class="text-center text-muted mb-4">Sign in to access the financial dashboard.</p>
+
+        <div id="authAlert" class="alert d-none" role="alert"></div>
+
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="loginUsername" class="form-label">Username</label>
+            <input id="loginUsername" class="form-control" autocomplete="username" required />
+          </div>
+          <div class="mb-3">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input id="loginPassword" type="password" class="form-control" autocomplete="current-password" required />
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-primary" type="submit">Log In</button>
+          </div>
+        </form>
+
+        <div class="alert alert-warning small mt-4 mb-0">
+          First login: <strong>admin</strong> / <strong>ChangeMe123!</strong>.
+          Change this temporary password immediately after signing in.
+        </div>
+      </div>
+    </div>
+  </section>
+  <header class="hero app-protected">
     <div class="container">
       <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
         <div>
           <h1 class="display-5 fw-semibold mb-1">Business Finances</h1>
           <p class="mb-0 opacity-75">Track income, expenses, cash outflows, debit/credit accounts, AR/AP, and see your live balance sheet.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
+          <button id="btnChangePassword" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</button>
+          <button id="btnLogout" class="btn btn-outline-light btn-sm">Log Out</button>
           <button id="btnExport" class="btn btn-light btn-sm">Export Data (JSON)</button>
           <label class="btn btn-outline-light btn-sm mb-0">
             Import Data <input id="importFile" type="file" accept="application/json" hidden />
@@ -84,7 +158,7 @@
     </div>
   </header>
 
-  <main class="container py-4">
+  <main class="container py-4 app-protected">
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pills-overview-tab" data-bs-toggle="pill" data-bs-target="#pills-overview" type="button" role="tab">Overview</button>
@@ -371,12 +445,198 @@
     </div>
   </main>
 
-  <footer class="bg-dark text-white py-3 mt-4 sticky-footer">
+  <footer class="bg-dark text-white py-3 mt-4 sticky-footer app-protected">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
       <div>© <span id="copyrightYear"></span> Business Finances-Jose A. Hernandez Soto — All Rights Reserved.</div>
       <div class="small">Theme: <span class="text-danger">Red</span> & <span class="text-primary">Blue</span></div>
     </div>
   </footer>
+
+
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="passwordModalLabel">Change Password</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="changePasswordForm">
+          <div class="modal-body">
+            <div id="passwordAlert" class="alert d-none" role="alert"></div>
+
+            <div class="mb-3">
+              <label for="currentPassword" class="form-label">Current password</label>
+              <input id="currentPassword" type="password" class="form-control" autocomplete="current-password" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New password</label>
+              <input id="newPassword" type="password" class="form-control" autocomplete="new-password" minlength="8" required />
+            </div>
+
+            <div class="mb-2">
+              <label for="confirmPassword" class="form-label">Confirm new password</label>
+              <input id="confirmPassword" type="password" class="form-control" autocomplete="new-password" minlength="8" required />
+            </div>
+
+            <div class="password-rules">
+              Use at least 8 characters, including an uppercase letter, lowercase letter, number, and special character.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save New Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- Static demonstration authentication using localStorage ----
+    // GitHub Pages only hosts static files, so this is not secure server-side authentication.
+    const Auth = {
+      credentialsKey: 'bf-auth-v1',
+      sessionKey: 'bf-auth-session-v1',
+      defaultUsername: 'admin',
+      defaultPassword: 'ChangeMe123!',
+
+      loadCredentials(){
+        try{
+          const saved = JSON.parse(localStorage.getItem(this.credentialsKey));
+          if(saved && saved.username && saved.passwordHash) return saved;
+        }catch(error){
+          console.error('Could not read saved credentials.', error);
+        }
+
+        const initial = {
+          username: this.defaultUsername,
+          passwordHash: this.hash(this.defaultPassword)
+        };
+        localStorage.setItem(this.credentialsKey, JSON.stringify(initial));
+        return initial;
+      },
+
+      hash(value){
+        // Lightweight client-side hash for a static demo only.
+        // This is not a substitute for secure password hashing on a server.
+        let hash = 2166136261;
+        for(let i = 0; i < value.length; i++){
+          hash ^= value.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        return (hash >>> 0).toString(16);
+      },
+
+      isLoggedIn(){
+        return sessionStorage.getItem(this.sessionKey) === 'true';
+      },
+
+      login(username, password){
+        const credentials = this.loadCredentials();
+        const valid =
+          username.trim() === credentials.username &&
+          this.hash(password) === credentials.passwordHash;
+
+        if(valid) sessionStorage.setItem(this.sessionKey, 'true');
+        return valid;
+      },
+
+      logout(){
+        sessionStorage.removeItem(this.sessionKey);
+      },
+
+      changePassword(currentPassword, newPassword){
+        const credentials = this.loadCredentials();
+        if(this.hash(currentPassword) !== credentials.passwordHash) return false;
+
+        credentials.passwordHash = this.hash(newPassword);
+        localStorage.setItem(this.credentialsKey, JSON.stringify(credentials));
+        return true;
+      }
+    };
+
+    function showAuthAlert(message, type = 'danger'){
+      const alert = document.getElementById('authAlert');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+    }
+
+    function showPasswordAlert(message, type = 'danger'){
+      const alert = document.getElementById('passwordAlert');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+    }
+
+    function updateAuthenticationView(){
+      const loggedIn = Auth.isLoggedIn();
+      document.getElementById('authScreen').style.display = loggedIn ? 'none' : 'flex';
+      document.querySelectorAll('.app-protected').forEach(element => {
+        element.style.display = loggedIn ? 'block' : 'none';
+      });
+
+      if(!loggedIn){
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginUsername').focus();
+      }
+    }
+
+    Auth.loadCredentials();
+    updateAuthenticationView();
+
+    document.getElementById('loginForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      if(Auth.login(username, password)){
+        document.getElementById('authAlert').className = 'alert d-none';
+        event.target.reset();
+        updateAuthenticationView();
+      }else{
+        showAuthAlert('The username or password is incorrect.');
+      }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      Auth.logout();
+      updateAuthenticationView();
+    });
+
+    document.getElementById('changePasswordForm').addEventListener('submit', event => {
+      event.preventDefault();
+
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+      if(!strongPassword.test(newPassword)){
+        showPasswordAlert('The new password does not meet the password requirements.');
+        return;
+      }
+
+      if(newPassword !== confirmPassword){
+        showPasswordAlert('The new passwords do not match.');
+        return;
+      }
+
+      if(!Auth.changePassword(currentPassword, newPassword)){
+        showPasswordAlert('The current password is incorrect.');
+        return;
+      }
+
+      showPasswordAlert('Password changed successfully.', 'success');
+      event.target.reset();
+
+      setTimeout(() => {
+        const modalElement = document.getElementById('passwordModal');
+        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+        document.getElementById('passwordAlert').className = 'alert d-none';
+      }, 700);
+    });
+  </script>
 
   <script>
     // ---- Simple store using localStorage ----
